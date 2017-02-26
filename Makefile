@@ -1,4 +1,4 @@
-all: server client client_1
+all: server client #client_1
 
 .PHONY : all
 
@@ -18,10 +18,10 @@ server: $(OBJECT_SERVER) $(SOURCE_SERVER)
 client: $(OBJECT_CLIENT) $(SOURCE_CLIENT)
 	$(CC) $(OBJECT_CLIENT) -o client
 
-client_1: $(OBJECT_CLIENT) $(SOURCE_CLIENT)
-	$(CC) $(OBJECT_CLIENT) -o client_1
+#client_1: $(OBJECT_CLIENT) $(SOURCE_CLIENT)
+#	$(CC) $(OBJECT_CLIENT) -o client_1
 
 .PHONY: clean
 clean:
-	rm server client client_1
+	rm server client #client_1
 

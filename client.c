@@ -4,12 +4,38 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/sem.h>
 
+union semun
+{
+    int val;
+    struct semid_ds *buf;
+    unsigned short *array;
+};
+
+#define SEMerr   -103
 #define ONLINE "online"
 #define BYE "bye"
 
+int P(int semid);
+int V(int semid);
+
 int main()
 {
+    int semid = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);//创建信号量
+    if(semid < 0)
+    {
+        printf("Error in semget()!\n");
+        exit(EXIT_FAILURE);
+    }
+    union semun sem_union;
+    sem_union.val = 1;
+    if(semctl(semid, 0, SETVAL, sem_union) == -1)
+    {
+        printf("Error in semctl()!\n");
+        exit(EXIT_FAILURE);
+    }
+
     //创建套接字
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     //向服务器（特定的IP和端口）发起请求
@@ -38,27 +64,64 @@ int main()
         printf("Error in fork()!!!\n");
         exit(EXIT_FAILURE);
     }
-    //while(1)
+    while(1)
     {
     if(0 == pid)
     {
-        while(1)
+   //     P(semid);
+     //   while(1)
         {
             printf("Message send:");
             scanf("%s", buffer);
             write(sock, buffer, sizeof(buffer));
         }
+     //   V(semid);
     }
     else
     {
-        while(1)
+    //    while(1)
+//        P(semid);
         {
             read(sock, buffer, sizeof(buffer));
             printf("Message receive:%s\n", buffer);
         }
+  //      V(semid);
     }
     }
     //关闭套接字
     close(sock);
     return 0;
 }
+
+
+int P(int semid)
+{
+  	struct sembuf semoper;
+  	semoper.sem_num = 0;
+  	semoper.sem_op = -1;
+  	semoper.sem_flg = 0;
+  
+  	if (semop(semid, &semoper, 1) < 0)
+    	{
+      		perror("Erreur P sur le Mutex");
+      		return SEMerr;
+    	}
+  	return 0;
+};
+
+int V(int semid)
+{
+  	struct sembuf semoper;
+  	semoper.sem_num = 0;
+  	semoper.sem_op = 1;
+  	semoper.sem_flg = 0;
+  
+  	if (semop(semid, &semoper, 1) < 0)
+   	{
+      		perror("Erreur V sur le Mutex");
+      		return SEMerr;
+    	}
+  	return 0;
+}
+
+

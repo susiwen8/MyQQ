@@ -25,8 +25,6 @@ int main(){
     const char father[] = "Father server!";
     char buffer_child[100];
     char buffer_father[100];
-    char yes_no_c[10] = {0};
-    char yes_no_f[10] = {0};
     //将套接字和IP、端口绑定
     struct sockaddr_in serv_addr, clnt_addr;
     socklen_t clnt_addr_size;
@@ -67,6 +65,9 @@ int main(){
                 read(clnt_sock, buffer_child, sizeof(buffer_child));
                 close(pfd_c_f[0]);
                 write(pfd_c_f[1], buffer_child, sizeof(buffer_child));
+                close(pfd_f_c[1]);
+                read(pfd_f_c[0], buffer_child, sizeof(buffer_child));
+                write(clnt_sock, buffer_child, sizeof(buffer_child));
             }
 
         }
@@ -87,12 +88,14 @@ int main(){
             write(pfd_f_c[1], online, sizeof(online));
         }
 
-
         while(1)
         {
             close(pfd_c_f[1]);
             read(pfd_c_f[0], buffer_father, sizeof(buffer_father));
             write(clnt_sock, buffer_father, sizeof(buffer_father));
+            read(clnt_sock, buffer_father, sizeof(buffer_father));
+            close(pfd_f_c[0]);
+            write(pfd_f_c[1], buffer_father, sizeof(buffer_father));
         }
     }
     //关闭套接字
